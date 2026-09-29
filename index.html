@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Quote Studio</title>
+    <meta name="description" content="Generate relatable, tweet-style quote cards for your profiles in one click." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <span class="logo" aria-hidden="true">❝</span>
+        <div>
+          <h1>Quote Studio</h1>
+          <p class="tagline">One click → a relatable quote card, ready to post.</p>
+        </div>
+      </div>
+    </header>
+
+    <main class="layout">
+      <!-- LEFT: controls ------------------------------------------------ -->
+      <section class="panel controls" aria-label="Controls">
+        <div class="block">
+          <div class="block-head">
+            <h2>Profile</h2>
+            <button type="button" class="link" id="addProfile">+ Add profile</button>
+          </div>
+          <div class="tabs" id="profileTabs" role="tablist"></div>
+
+          <details class="subpanel" id="profileEditor">
+            <summary>Edit this profile</summary>
+            <div class="grid-2">
+              <label>Name <input id="pName" type="text" maxlength="40" /></label>
+              <label>Handle <input id="pHandle" type="text" maxlength="40" placeholder="@yourhandle" /></label>
+            </div>
+            <div class="avatar-row">
+              <img id="pAvatarPreview" alt="" class="avatar-preview" />
+              <label class="btn btn-ghost file-btn">
+                Upload photo
+                <input id="pAvatar" type="file" accept="image/*" hidden />
+              </label>
+              <button type="button" class="btn btn-ghost" id="pAvatarRemove">Remove photo</button>
+            </div>
+            <label>Tick
+              <select id="pBadge"></select>
+            </label>
+            <label>Who is this profile for? <span class="hint">(used by AI mode)</span>
+              <input id="pAudience" type="text" maxlength="200" placeholder="e.g. college students and young professionals in India" />
+            </label>
+            <label>Voice / brand notes <span class="hint">(used by AI mode)</span>
+              <textarea id="pVoice" rows="2" maxlength="400" placeholder="e.g. honest, calm, a little bold. Talks about careers, money and self-growth."></textarea>
+            </label>
+            <button type="button" class="btn btn-danger-ghost" id="deleteProfile">Delete this profile</button>
+          </details>
+        </div>
+
+        <div class="block">
+          <h2>What to post</h2>
+          <div class="segmented" role="radiogroup" aria-label="Quote source">
+            <label><input type="radio" name="source" value="library" checked /> <span>Quote library <small>free · offline</small></span></label>
+            <label><input type="radio" name="source" value="ai" /> <span>AI (Claude) <small>fresh every time</small></span></label>
+          </div>
+
+          <p class="label">Topics <span class="hint">(pick none for a mix)</span></p>
+          <div class="chips" id="categoryChips"></div>
+
+          <div class="grid-2">
+            <label>Language
+              <select id="language"></select>
+            </label>
+            <label>How many
+              <select id="count">
+                <option value="1">1 post</option>
+                <option value="3">3 posts</option>
+                <option value="5">5 posts</option>
+                <option value="7">7 posts (a week)</option>
+              </select>
+            </label>
+          </div>
+
+          <div id="aiSettings" class="subpanel ai-settings" hidden>
+            <label>Anything specific? <span class="hint">(optional)</span>
+              <input id="aiTopic" type="text" maxlength="200" placeholder="e.g. exam pressure, first job, building a startup, breakups" />
+            </label>
+            <label>Anthropic API key
+              <input id="apiKey" type="password" autocomplete="off" spellcheck="false" placeholder="sk-ant-..." />
+            </label>
+            <p class="hint">
+              Stored only in this browser and sent only to Anthropic. Get one at
+              <a href="https://console.anthropic.com" target="_blank" rel="noopener">console.anthropic.com</a>.
+              Each click costs a few cents. Don't save your key on a shared computer.
+            </p>
+          </div>
+
+          <button type="button" class="btn btn-primary btn-big" id="generate">✨ Generate</button>
+          <p class="status" id="status" role="status" aria-live="polite"></p>
+        </div>
+
+        <div class="block">
+          <h2>Card style</h2>
+          <div class="grid-2">
+            <label>Background <select id="theme"></select></label>
+            <label>Size <select id="size"></select></label>
+            <label>Font <select id="font"></select></label>
+            <label>Text align
+              <select id="align">
+                <option value="left">Left</option>
+                <option value="center">Center</option>
+              </select>
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <!-- RIGHT: preview ------------------------------------------------ -->
+      <section class="panel preview" aria-label="Preview">
+        <div class="canvas-wrap">
+          <canvas id="card" width="1080" height="1350" aria-label="Quote card preview"></canvas>
+        </div>
+
+        <div class="actions">
+          <button type="button" class="btn btn-primary" id="download">⬇ Download PNG</button>
+          <button type="button" class="btn" id="share" hidden>Share…</button>
+          <button type="button" class="btn" id="next">↻ Next quote</button>
+        </div>
+
+        <label>Quote text <span class="hint">(edit freely: a blank line starts a new paragraph)</span>
+          <textarea id="quoteText" rows="4"></textarea>
+        </label>
+
+        <label>Caption
+          <textarea id="caption" rows="3"></textarea>
+        </label>
+        <div class="actions">
+          <button type="button" class="btn btn-ghost" id="copyCaption">Copy caption</button>
+          <button type="button" class="btn btn-ghost" id="copyText">Copy quote text</button>
+        </div>
+
+        <div class="batch" id="batchWrap" hidden>
+          <div class="block-head">
+            <h2>This batch</h2>
+            <button type="button" class="link" id="downloadAll">⬇ Download all</button>
+          </div>
+          <ol class="batch-list" id="batchList"></ol>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>Tip: post the same quote on Instagram, LinkedIn and X. Consistency beats perfection.</p>
+    </footer>
+
+    <script src="js/quotes.js"></script>
+    <script src="js/card.js"></script>
+    <script src="js/ai.js"></script>
+    <script src="js/app.js"></script>
+  </body>
+</html>
