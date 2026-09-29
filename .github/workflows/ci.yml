@@ -1,0 +1,22 @@
+# Runs the automatic checks (npm test) on every push and every pull request.
+# You'll see a ✅ or ❌ next to your commits and on the pull request page.
+name: Tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download the code
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Run the tests
+        run: npm test

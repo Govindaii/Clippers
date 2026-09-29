@@ -1,0 +1,13 @@
+{
+  "name": "quote-studio",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Generate relatable, tweet-style quote cards for your profiles in one click.",
+  "scripts": {
+    "test": "node --test",
+    "daily": "node scripts/daily-quotes.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

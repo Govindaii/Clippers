@@ -1,0 +1,44 @@
+# Every morning, opens an Issue in this repo with 3 quote ideas for the day
+# (and closes yesterday's). GitHub notifies you, so it doubles as a "time to post" reminder.
+#
+# Run it right now: Actions tab → "Daily quote ideas" → "Run workflow".
+# Turn it off:      Actions tab → "Daily quote ideas" → "..." → "Disable workflow".
+name: Daily quote ideas
+
+on:
+  schedule:
+    # 02:17 UTC = 7:47 AM India time. Change it with https://crontab.guru
+    - cron: "17 2 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  post-ideas:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - name: Download the code
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Pick today's quotes
+        run: node scripts/daily-quotes.js > today.md
+
+      - name: Close yesterday's list
+        run: |
+          gh issue list --state open --search "Quote ideas for in:title" --json number --jq '.[].number' |
+            while read -r number; do
+              gh issue close "$number" --comment "A new list is up. Closing this one."
+            done
+
+      - name: Open today's list
+        run: gh issue create --title "Quote ideas for $(date -u '+%d %b %Y')" --body-file today.md
